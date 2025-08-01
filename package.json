@@ -1,0 +1,30 @@
+{
+	"name": "walkin-homepage",
+	"description": "walkin's homepage",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"prepare": "panda codegen",
+		"dev": "wxt",
+		"dev:firefox": "wxt -b firefox",
+		"build": "wxt build",
+		"build:firefox": "wxt build -b firefox",
+		"zip": "wxt zip",
+		"zip:firefox": "wxt zip -b firefox",
+		"compile": "tsc --noEmit",
+		"postinstall": "wxt prepare"
+	},
+	"dependencies": {
+		"@ark-ui/solid": "^5.18.2",
+		"solid-js": "^1.9.6"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.1.3",
+		"@pandacss/dev": "^0.54.0",
+		"@park-ui/panda-preset": "^0.43.1",
+		"@wxt-dev/module-solid": "^1.1.3",
+		"typescript": "^5.8.3",
+		"wxt": "^0.20.6"
+	}
+}
