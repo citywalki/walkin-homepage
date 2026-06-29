@@ -1,30 +1,49 @@
 /* eslint-disable */
-import type { ComponentProps, Component, JSX } from 'solid-js'
+import type { Accessor, ComponentProps, Component, JSX } from 'solid-js'
 import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe';
-import type { Assign, DistributiveOmit, DistributiveUnion, JsxHTMLProps, JsxStyleProps, Pretty } from './system-types';
+import type { Assign, DistributiveUnion, JsxHTMLProps, JsxStyleProps, Pretty } from './system-types';
 
 interface Dict {
   [k: string]: unknown
 }
 
-export type ElementType<P = any> = keyof JSX.IntrinsicElements | Component<P>
+export type DataAttrs = Record<`data-${string}`, unknown>
+
+export interface UnstyledProps {
+  /**
+   * Whether to remove recipe styles
+   */
+  unstyled?: boolean | undefined
+}
+
+export interface AsProps {
+  /**
+   * The element to render as
+   */
+  as?: ElementType | undefined
+}
+
+export type ElementType = keyof JSX.IntrinsicElements | Component<any>
 
 export interface StyledComponent<T extends ElementType, P extends Dict = {}> {
-  (props: JsxHTMLProps<ComponentProps<T>, Assign<JsxStyleProps, P>>): JSX.Element
-  displayName?: string
+  (props: JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, Assign<JsxStyleProps, P>>): JSX.Element
+  displayName?: string | undefined
 }
 
 interface RecipeFn {
   __type: any
 }
 
+export type MaybeAccessor<T> = T | Accessor<T>
+
 export interface JsxFactoryOptions<TProps extends Dict> {
   dataAttr?: boolean
-  defaultProps?: TProps
-  shouldForwardProp?(prop: string, variantKeys: string[]): boolean
+  defaultProps?: MaybeAccessor<Partial<TProps> & DataAttrs>
+  shouldForwardProp?: (prop: string, variantKeys: string[]) => boolean
+  forwardProps?: string[]
 }
 
-export type JsxRecipeProps<T extends ElementType, P extends Dict> = JsxHTMLProps<ComponentProps<T>, P>;
+export type JsxRecipeProps<T extends ElementType, P extends Dict> = JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, P>;
 
 export type JsxElement<T extends ElementType, P extends Dict> = T extends StyledComponent<infer A, infer B>
   ? StyledComponent<A, Pretty<DistributiveUnion<P, B>>>
@@ -45,6 +64,6 @@ export type JsxElements = {
 
 export type Styled = JsxFactory & JsxElements
 
-export type HTMLStyledProps<T extends ElementType> = JsxHTMLProps<ComponentProps<T>, JsxStyleProps>
+export type HTMLStyledProps<T extends ElementType> = JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, JsxStyleProps>
 
 export type StyledVariantProps<T extends StyledComponent<any, any>> = T extends StyledComponent<any, infer Props> ? Props : never

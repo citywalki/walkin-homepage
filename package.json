@@ -16,15 +16,15 @@
 		"postinstall": "wxt prepare"
 	},
 	"dependencies": {
-		"@ark-ui/solid": "^5.18.2",
-		"solid-js": "^1.9.6"
+		"@ark-ui/solid": "^5.37.1",
+		"solid-js": "^1.9.13"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.1.3",
-		"@pandacss/dev": "^0.54.0",
+		"@biomejs/biome": "2.5.1",
+		"@pandacss/dev": "^1.11.4",
 		"@park-ui/panda-preset": "^0.43.1",
-		"@wxt-dev/module-solid": "^1.1.3",
-		"typescript": "^5.8.3",
-		"wxt": "^0.20.6"
+		"@wxt-dev/module-solid": "^1.1.4",
+		"typescript": "^6.0.3",
+		"wxt": "^0.20.27"
 	}
 }

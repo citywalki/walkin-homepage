@@ -1,11 +1,9 @@
-import { Combobox, useListCollection } from "@ark-ui/solid/combobox";
-import { Portal } from "solid-js/web";
 import { css } from "../../styled-system/css";
 
 function App() {
 	let searchInput: HTMLInputElement;
 	const searchFocus = () => {
-		// @ts-ignore
+		// @ts-expect-error
 		searchInput?.focus();
 	};
 	const searchKeydown = async (e) => {

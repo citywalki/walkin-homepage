@@ -5,9 +5,9 @@ import { defineConfig } from "wxt";
 export default defineConfig({
 	modules: ["@wxt-dev/module-solid"],
 	manifest: {
-		permissions: ["bookmarks"],
+		permissions: ["bookmarks", "storage", "webRequest"],
 	},
-	vite: (env) => {
+	vite: (_env) => {
 		return {
 			resolve: {
 				alias: {
