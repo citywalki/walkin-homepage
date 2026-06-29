@@ -79,30 +79,21 @@ function App() {
 					</div>
 				</div>
 				<div class=" flex items-center bg-white rounded-lg border border-gray-200 shadow-md transition-shadow duration-200">
-					<Combobox.Root>
-						<Combobox.Control>
-							<input
-								on:keydown={searchKeydown}
-								ref={searchInput}
-								class={css({
-									flexGrow: 1,
-									py: 3,
-									px: 2,
-									outline: "none",
-									fontSize: "xl",
-									fontWeight: "500",
-								})}
-								type="text"
-								placeholder="使用Bing搜索"
-								id="searchInput"
-							/>
-						</Combobox.Control>
-						<Portal>
-							<Combobox.Positioner>
-								<Combobox.Content></Combobox.Content>
-							</Combobox.Positioner>
-						</Portal>
-					</Combobox.Root>
+					<input
+						on:keydown={searchKeydown}
+						ref={searchInput}
+						class={css({
+							flexGrow: 1,
+							py: 3,
+							px: 2,
+							outline: "none",
+							fontSize: "xl",
+							fontWeight: "500",
+						})}
+						type="text"
+						placeholder="使用Bing搜索"
+						id="searchInput"
+					/>
 				</div>
 			</main>
 		</div>
