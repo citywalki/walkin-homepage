@@ -112,6 +112,9 @@ jobs:
           # If omitted, AMO will auto-assign an ID on first submission.
           FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
 
+      - name: List output files
+        run: ls -la .output/
+
       - name: Upload extension ZIPs
         uses: actions/upload-artifact@v4
         with:
