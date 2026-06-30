@@ -64,6 +64,7 @@ jobs:
         run: |
           git add package.json
           git commit -m "chore(release): ${{ steps.vars.outputs.tag }}"
+          git pull origin main --rebase
           git push origin HEAD
 
       - name: Create and push tag
@@ -109,26 +110,16 @@ jobs:
       - name: Build and zip Firefox extension
         run: pnpm zip:firefox
         env:
-          # Optional: stable extension ID from AMO.
-          # If omitted, AMO will auto-assign an ID on first submission.
           FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
 
       - name: Submit to Firefox Add-ons
+        if: inputs.dry-run != true
         run: |
-          DRY_RUN=""
-          if [ "${{ inputs.dry-run }}" = "true" ]; then
-            DRY_RUN="--dry-run"
-          fi
-
-          pnpm wxt submit \
-            --firefox-zip .output/*-firefox.zip \
-            --firefox-sources-zip .output/*-sources.zip \
-            --firefox-extension-id walkin-homepage \
-            --firefox-channel ${{ inputs.firefox-channel }} \
-            $DRY_RUN
-        env:
-          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
-          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+          pnpm dlx web-ext@8 sign \
+            --source-dir .output/firefox-mv2 \
+            --api-key ${{ secrets.FIREFOX_JWT_ISSUER }} \
+            --api-secret ${{ secrets.FIREFOX_JWT_SECRET }} \
+            --channel ${{ inputs.firefox-channel }}
 
       - name: Upload extension ZIPs for release
         if: inputs.dry-run != true
