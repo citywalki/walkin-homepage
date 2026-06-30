@@ -123,7 +123,11 @@ function App() {
 	};
 
 	onMount(() => {
-		searchInput?.focus();
+		const focusInput = () => searchInput?.focus();
+
+		// 立即聚焦，并推迟到浏览器完成新标签页切焦后再试一次
+		focusInput();
+		requestAnimationFrame(() => requestAnimationFrame(focusInput));
 
 		async function loadBookmarks() {
 			try {
@@ -177,6 +181,7 @@ function App() {
 						}}
 						class="search-box__input"
 						type="text"
+						autofocus
 						placeholder={slashMode() ? "搜索书签…" : "使用Bing搜索"}
 						id="searchInput"
 						value={search()}

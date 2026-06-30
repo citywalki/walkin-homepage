@@ -10,12 +10,13 @@ body {
 
 /* Home page layout */
 .home-page {
-	min-height: 100vh;
+	height: 100vh;
 	width: 100%;
 	background-color: #f9f9fb;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	overflow: hidden;
 }
 
 .home-page main {
