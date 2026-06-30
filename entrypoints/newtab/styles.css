@@ -83,6 +83,7 @@ body {
 
 .search-box__input::placeholder {
 	color: #9ca3af;
+	font-weight: 400;
 }
 
 /* Bookmark dropdown */
