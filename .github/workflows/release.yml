@@ -118,7 +118,7 @@ jobs:
       - name: Upload extension ZIPs
         uses: actions/upload-artifact@v4
         with:
-          name: extension-zips
+          name: extension-zips-${{ github.run_id }}
           path: .output/*.zip
           if-no-files-found: error
 
@@ -147,7 +147,7 @@ jobs:
       - name: Download extension ZIPs
         uses: actions/download-artifact@v4
         with:
-          name: extension-zips
+          name: extension-zips-${{ github.run_id }}
           path: .output
 
       - name: Submit to Firefox Add-ons
@@ -176,7 +176,7 @@ jobs:
       - name: Download extension ZIPs
         uses: actions/download-artifact@v4
         with:
-          name: extension-zips
+          name: extension-zips-${{ github.run_id }}
           path: .output
 
       - name: Create GitHub Release
