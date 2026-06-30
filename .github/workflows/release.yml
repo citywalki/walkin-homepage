@@ -112,15 +112,13 @@ jobs:
           # If omitted, AMO will auto-assign an ID on first submission.
           FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
 
-      - name: List output files
-        run: ls -la .output/
-
       - name: Upload extension ZIPs
         uses: actions/upload-artifact@v4
         with:
           name: extension-zips-${{ github.run_id }}
           path: .output/
-          if-no-files-found: error.output/*.zip
+          overwrite: true
+          compression-level: 0
           if-no-files-found: error
 
   submit-firefox:
