@@ -63,7 +63,11 @@ jobs:
       - name: Commit and push version bump
         run: |
           git add package.json
-          git commit -m "chore(release): ${{ steps.vars.outputs.tag }}"
+          if git diff --cached --quiet; then
+            echo "No version change to commit, skipping"
+          else
+            git commit -m "chore(release): ${{ steps.vars.outputs.tag }}"
+          fi
           git pull origin main --rebase
           git push origin HEAD
 
@@ -119,7 +123,8 @@ jobs:
             --source-dir .output/firefox-mv2 \
             --api-key ${{ secrets.FIREFOX_JWT_ISSUER }} \
             --api-secret ${{ secrets.FIREFOX_JWT_SECRET }} \
-            --channel ${{ inputs.firefox-channel }}
+            --channel ${{ inputs.firefox-channel }} \
+            --timeout 300000
 
       - name: Upload extension ZIPs for release
         if: inputs.dry-run != true
