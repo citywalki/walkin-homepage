@@ -10,6 +10,7 @@ import { browser } from "wxt/browser";
 import {
 	type BookmarkItem,
 	bookmarksStorage,
+	enrichBookmark,
 	flattenBookmarksTree,
 } from "@/utils/bookmarks";
 import { css } from "../../styled-system/css";
@@ -29,10 +30,19 @@ function App() {
 		const list = bookmarks() ?? [];
 		const q = query();
 		if (!q) return list;
-		return list.filter(
-			(b: BookmarkItem) =>
-				b.title.toLowerCase().includes(q) || b.url.toLowerCase().includes(q),
-		);
+		return list.filter((b: BookmarkItem) => {
+			const title = b.title.toLowerCase();
+			const url = b.url.toLowerCase();
+			const pinyin = b.pinyin?.toLowerCase();
+			const initials = b.pinyinInitials?.toLowerCase();
+			return (
+				title.includes(q) ||
+				url.includes(q) ||
+				pinyin?.includes(q) ||
+				initials?.includes(q) ||
+				false
+			);
+		});
 	};
 
 	createEffect(() => {
@@ -101,8 +111,11 @@ function App() {
 					const tree = await browser.bookmarks.getTree();
 					value = tree.flatMap((node) => flattenBookmarksTree(node));
 					await bookmarksStorage.setValue(value);
+				} else {
+					// Backfill pinyin for bookmarks synced before this feature
+					value = value.map(enrichBookmark);
 				}
-				setBookmarks(value ?? []);
+				setBookmarks(value);
 			} catch (error) {
 				console.error("[walkin] Failed to load bookmarks:", error);
 			} finally {
@@ -113,7 +126,7 @@ function App() {
 		loadBookmarks();
 
 		const unwatch = bookmarksStorage.watch((value) => {
-			setBookmarks(value ?? []);
+			setBookmarks((value ?? []).map(enrichBookmark));
 			setLoading(false);
 		});
 		onCleanup(() => unwatch());

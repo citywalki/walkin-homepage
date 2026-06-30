@@ -17,6 +17,7 @@
 	},
 	"dependencies": {
 		"@ark-ui/solid": "^5.37.1",
+		"pinyin-pro": "^3.28.1",
 		"solid-js": "^1.9.13"
 	},
 	"devDependencies": {
