@@ -1,11 +1,12 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - "v*"
   workflow_dispatch:
     inputs:
+      version:
+        description: "Version to release (e.g., 0.1.0)"
+        required: true
+        type: string
       dry-run:
         description: "Dry run without actually submitting"
         type: boolean
@@ -18,13 +19,67 @@ on:
           - unlisted
         default: listed
 
+permissions:
+  contents: write
+
 jobs:
+  bump-and-tag:
+    name: Bump version and create tag
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.vars.outputs.tag }}
+      version: ${{ steps.vars.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate version format
+        id: vars
+        run: |
+          VERSION="${{ inputs.version }}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Version must be in semver format (e.g., 0.1.0)"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Setup git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Update package.json version
+        run: |
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = '${{ steps.vars.outputs.version }}';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, '\t') + '\n');
+          "
+
+      - name: Commit and push version bump
+        run: |
+          git add package.json
+          git commit -m "chore(release): ${{ steps.vars.outputs.tag }}"
+          git push origin HEAD
+
+      - name: Create and push tag
+        run: |
+          git tag ${{ steps.vars.outputs.tag }}
+          git push origin ${{ steps.vars.outputs.tag }}
+
   build:
     name: Build extension ZIPs
+    needs: bump-and-tag
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.bump-and-tag.outputs.tag }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -37,16 +92,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Verify version matches tag
-        if: github.event_name == 'push'
-        run: |
-          TAG="${GITHUB_REF_NAME#v}"
-          PKG=$(node -p "require('./package.json').version")
-          if [ "$TAG" != "$PKG" ]; then
-            echo "Tag version $TAG does not match package.json version $PKG"
-            exit 1
-          fi
 
       - name: Type check
         run: pnpm run compile
@@ -100,14 +145,14 @@ jobs:
       - name: Submit to Firefox Add-ons
         run: |
           DRY_RUN=""
-          if [ "${{ inputs.dry-run || 'false' }}" = "true" ]; then
+          if [ "${{ inputs.dry-run }}" = "true" ]; then
             DRY_RUN="--dry-run"
           fi
 
           pnpm wxt submit \
             --firefox-zip .output/*-firefox.zip \
             --firefox-sources-zip .output/*-sources.zip \
-            --firefox-channel ${{ inputs.firefox-channel || 'listed' }} \
+            --firefox-channel ${{ inputs.firefox-channel }} \
             $DRY_RUN
         env:
           FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
@@ -116,11 +161,9 @@ jobs:
 
   github-release:
     name: Create GitHub Release
-    needs: build
+    needs: [bump-and-tag, build]
+    if: inputs.dry-run != true
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-    permissions:
-      contents: write
     steps:
       - name: Download extension ZIPs
         uses: actions/download-artifact@v4
@@ -131,5 +174,6 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ needs.bump-and-tag.outputs.tag }}
           files: .output/*.zip
           generate_release_notes: true

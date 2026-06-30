@@ -19,14 +19,18 @@ Configure these in the repository's **Settings → Secrets and variables → Act
 
 ### Publishing
 
-1. Update `package.json#version` and commit.
-2. Create and push a tag:
-   ```bash
-   git tag v0.1.0
-   git push origin v0.1.0
-   ```
-3. The `Release` workflow will build, submit to Firefox Add-ons, and create a GitHub Release.
+1. In the GitHub repository, go to **Actions → Release → Run workflow**.
+2. Enter the version you want to release (e.g., `0.1.0`).
+3. Enable **Dry run** first to verify credentials without submitting.
+4. Once the dry run passes, rerun the workflow with **Dry run** disabled.
 
-To test credentials without publishing, trigger the workflow manually (`workflow_dispatch`) with **Dry run** enabled.
+The workflow will automatically:
+- Update `package.json#version`
+- Commit and push the version bump
+- Create and push the `v{version}` tag
+- Build and submit the extension to Firefox Add-ons
+- Create a GitHub Release with the ZIPs attached
 
-See `.github/workflows/release.yml` and `SOURCE_CODE_REVIEW.md` for details.
+### Manual Tagging (Optional)
+
+If you prefer to control the version locally, you can still update `package.json#version` manually, push the commit, and create a tag. However, the workflow is designed to be the single entry point for releases.
