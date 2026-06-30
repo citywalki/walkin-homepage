@@ -132,10 +132,7 @@ function App() {
 	});
 
 	return (
-		<div
-			on:click={searchFocus}
-			class="home-page"
-		>
+		<div on:click={searchFocus} class="home-page">
 			<main>
 				<div class="profile">
 					<img
@@ -162,19 +159,14 @@ function App() {
 						value={search()}
 					/>
 					<Show when={isSlashMode()}>
-						<div
-							role="listbox"
-							class="bookmark-dropdown"
-						>
+						<div role="listbox" class="bookmark-list">
 							<Show
 								when={!loading()}
-								fallback={<div class="bookmark-dropdown__empty">加载中…</div>}
+								fallback={<div class="bookmark-list__empty">加载中…</div>}
 							>
 								<For
 									each={filteredBookmarks()}
-									fallback={
-										<div class="bookmark-dropdown__empty">无匹配书签</div>
-									}
+									fallback={<div class="bookmark-list__empty">无匹配书签</div>}
 								>
 									{(bookmark, index) => (
 										<div
@@ -185,12 +177,8 @@ function App() {
 											onMouseEnter={() => setSelectedIndex(index())}
 											on:click={() => openBookmark(bookmark.url)}
 										>
-											<p class="bookmark-item__title">
-												{bookmark.title}
-											</p>
-											<p class="bookmark-item__url">
-												{bookmark.url}
-											</p>
+											<p class="bookmark-item__title">{bookmark.title}</p>
+											<p class="bookmark-item__url">{bookmark.url}</p>
 										</div>
 									)}
 								</For>

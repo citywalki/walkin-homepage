@@ -5,28 +5,28 @@
 body {
 	margin: 0;
 	font-family:
-		system-ui,
-		-apple-system,
-		BlinkMacSystemFont,
-		"Segoe UI",
-		sans-serif;
+		system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 /* Home page layout */
 .home-page {
-	height: 100vh;
+	min-height: 100vh;
 	width: 100%;
 	background-color: #f9f9fb;
 	display: flex;
-	justify-content: center;
+	flex-direction: column;
+	align-items: center;
 }
 
 .home-page main {
 	display: flex;
 	flex-direction: column;
 	width: 720px;
-	padding-top: 160px;
+	margin-top: 160px;
+	margin-bottom: 48px;
 	gap: 48px;
+	flex: 1;
+	min-height: 0;
 }
 
 /* Profile header */
@@ -66,7 +66,10 @@ body {
 
 /* Search box */
 .search-box {
-	position: relative;
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
 }
 
 .search-box__input {
@@ -86,49 +89,50 @@ body {
 	font-weight: 400;
 }
 
-/* Bookmark dropdown */
-.bookmark-dropdown {
-	position: absolute;
-	top: 100%;
-	left: 0;
-	right: 0;
-	margin-top: 8px;
-	background: #fff;
-	border-radius: 8px;
-	border: 1px solid #e5e7eb;
-	box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-	max-height: 320px;
+/* Bookmark inline list */
+.bookmark-list {
+	--bookmark-list-overhang: 16px;
+
+	margin-top: 4px;
+	width: calc(100% + var(--bookmark-list-overhang) * 2);
+	margin-left: calc(var(--bookmark-list-overhang) * -1);
+	flex: 1;
+	min-height: 0;
 	overflow-y: auto;
-	z-index: 10;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
 }
 
-.bookmark-dropdown__empty {
-	padding: 12px 16px;
-	color: #4b5563;
+.bookmark-list::-webkit-scrollbar {
+	display: none;
+}
+
+.bookmark-list__empty {
+	padding: 6px calc(8px + var(--bookmark-list-overhang));
+	color: #6b7280;
+	font-size: 14px;
 }
 
 .bookmark-item {
-	padding: 8px 16px;
+	padding: 6px calc(8px + var(--bookmark-list-overhang));
 	cursor: pointer;
-	border-bottom: 1px solid #f3f4f6;
+	border-radius: 6px;
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	gap: 2px;
 	background: transparent;
-}
-
-.bookmark-item:last-child {
-	border-bottom: none;
+	transition: background-color 120ms;
 }
 
 .bookmark-item:hover,
 .bookmark-item[aria-selected="true"] {
-	background-color: #f3f4f6;
+	background-color: #e5e7eb;
 }
 
 .bookmark-item__title {
-	font-size: 16px;
+	font-size: 14px;
 	font-weight: 500;
+	color: #111827;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -137,7 +141,7 @@ body {
 
 .bookmark-item__url {
 	font-size: 12px;
-	color: #4b5563;
+	color: #6b7280;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
