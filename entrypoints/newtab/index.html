@@ -4,6 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Walkin's HomePage</title>
+    <script>
+      (() => {
+        var mode = localStorage.getItem("walkin-theme") || "auto";
+        var resolved = mode === "auto"
+          ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+          : mode;
+        document.documentElement.setAttribute("data-theme", resolved);
+      })();
+    </script>
     <!-- Set include/exclude if the page should be removed from some builds -->
 <!--    <meta name="manifest.include" content="['chrome', ...]" />-->
 <!--    <meta name="manifest.exclude" content="['chrome', ...]" />-->

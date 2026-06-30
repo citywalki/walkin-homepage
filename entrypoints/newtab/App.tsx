@@ -9,6 +9,7 @@ import {
 import { browser } from "wxt/browser";
 import { EditableAvatar } from "@/components/ui/EditableAvatar";
 import { EditableText } from "@/components/ui/EditableText";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import {
 	type BookmarkItem,
 	bookmarksStorage,
@@ -173,6 +174,9 @@ function App() {
 
 	return (
 		<div on:click={searchFocus} class="home-page">
+			<header class="home-page__header">
+				<ThemeToggle />
+			</header>
 			<main>
 				<div class="profile">
 					<EditableAvatar
