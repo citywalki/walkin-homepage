@@ -1,0 +1,135 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Dry run without actually submitting"
+        type: boolean
+        default: true
+      firefox-channel:
+        description: "Firefox channel"
+        type: choice
+        options:
+          - listed
+          - unlisted
+        default: listed
+
+jobs:
+  build:
+    name: Build extension ZIPs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify version matches tag
+        if: github.event_name == 'push'
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG=$(node -p "require('./package.json').version")
+          if [ "$TAG" != "$PKG" ]; then
+            echo "Tag version $TAG does not match package.json version $PKG"
+            exit 1
+          fi
+
+      - name: Type check
+        run: pnpm run compile
+
+      - name: Clean env files before zipping
+        run: rm -f .env .env.*
+
+      - name: Build and zip Chrome extension
+        run: pnpm zip
+
+      - name: Build and zip Firefox extension
+        run: pnpm zip:firefox
+        env:
+          # Optional: stable extension ID from AMO.
+          # If omitted, AMO will auto-assign an ID on first submission.
+          FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
+
+      - name: Upload extension ZIPs
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-zips
+          path: .output/*.zip
+          if-no-files-found: error
+
+  submit-firefox:
+    name: Submit to Firefox Add-ons
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Download extension ZIPs
+        uses: actions/download-artifact@v4
+        with:
+          name: extension-zips
+          path: .output
+
+      - name: Submit to Firefox Add-ons
+        run: |
+          DRY_RUN=""
+          if [ "${{ inputs.dry-run || 'false' }}" = "true" ]; then
+            DRY_RUN="--dry-run"
+          fi
+
+          pnpm wxt submit \
+            --firefox-zip .output/*-firefox.zip \
+            --firefox-sources-zip .output/*-sources.zip \
+            --firefox-channel ${{ inputs.firefox-channel || 'listed' }} \
+            $DRY_RUN
+        env:
+          FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
+          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+
+  github-release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    permissions:
+      contents: write
+    steps:
+      - name: Download extension ZIPs
+        uses: actions/download-artifact@v4
+        with:
+          name: extension-zips
+          path: .output
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: .output/*.zip
+          generate_release_notes: true
