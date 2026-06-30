@@ -112,15 +112,6 @@ jobs:
           # If omitted, AMO will auto-assign an ID on first submission.
           FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
 
-      - name: Upload extension ZIPs for release
-        uses: actions/upload-artifact@v4
-        with:
-          name: extension-zips-${{ github.run_id }}
-          path: .output/*.zip
-          overwrite: true
-          compression-level: 0
-          if-no-files-found: error
-
       - name: Submit to Firefox Add-ons
         run: |
           DRY_RUN=""
@@ -138,17 +129,49 @@ jobs:
           FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
           FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
 
+      - name: Upload extension ZIPs for release
+        if: inputs.dry-run != true
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-zips-${{ github.run_id }}
+          path: .output/
+          overwrite: true
+          compression-level: 0
+          if-no-files-found: error
+
   github-release:
     name: Create GitHub Release
     needs: [bump-and-tag, build-and-submit-firefox]
     if: inputs.dry-run != true
     runs-on: ubuntu-latest
     steps:
-      - name: Download extension ZIPs
-        uses: actions/download-artifact@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          name: extension-zips-${{ github.run_id }}
-          path: .output
+          ref: ${{ needs.bump-and-tag.outputs.tag }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and zip extensions
+        run: |
+          pnpm zip
+          pnpm zip:firefox
+        env:
+          FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
