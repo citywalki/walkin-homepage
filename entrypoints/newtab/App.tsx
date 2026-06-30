@@ -7,12 +7,15 @@ import {
 	Show,
 } from "solid-js";
 import { browser } from "wxt/browser";
+import { EditableAvatar } from "@/components/ui/EditableAvatar";
+import { EditableText } from "@/components/ui/EditableText";
 import {
 	type BookmarkItem,
 	bookmarksStorage,
 	enrichBookmark,
 	flattenBookmarksTree,
 } from "@/utils/bookmarks";
+import { DEFAULT_PROFILE, type Profile, profileStorage } from "@/utils/profile";
 
 function App() {
 	let searchInput: HTMLInputElement;
@@ -22,6 +25,7 @@ function App() {
 	const [selectedIndex, setSelectedIndex] = createSignal(0);
 	const [bookmarks, setBookmarks] = createSignal<BookmarkItem[]>([]);
 	const [loading, setLoading] = createSignal(true);
+	const [profile, setProfile] = createSignal<Profile>(DEFAULT_PROFILE);
 
 	const query = () => search().trim().toLowerCase();
 
@@ -156,20 +160,51 @@ function App() {
 			setLoading(false);
 		});
 		onCleanup(() => unwatch());
+
+		profileStorage
+			.getValue()
+			.then((value) => {
+				if (value) setProfile(value);
+			})
+			.catch((error) => {
+				console.error("[walkin] Failed to load profile:", error);
+			});
 	});
 
 	return (
 		<div on:click={searchFocus} class="home-page">
 			<main>
 				<div class="profile">
-					<img
-						class="profile__avatar"
-						src="https://cdn.v2ex.com/gravatar/97227251c4a0e846063fd5f1d5201c92?size=64"
-						alt=""
+					<EditableAvatar
+						src={profile().avatarUrl}
+						alt={profile().title}
+						onChange={(avatarUrl) => {
+							const next = { ...profile(), avatarUrl };
+							setProfile(next);
+							profileStorage.setValue(next).catch(console.error);
+						}}
 					/>
 					<div class="profile__info">
-						<p class="profile__title">Walkin</p>
-						<p class="profile__signature">yolo.</p>
+						<p class="profile__title">
+							<EditableText
+								value={profile().title}
+								onChange={(title) => {
+									const next = { ...profile(), title };
+									setProfile(next);
+									profileStorage.setValue(next).catch(console.error);
+								}}
+							/>
+						</p>
+						<p class="profile__signature">
+							<EditableText
+								value={profile().signature}
+								onChange={(signature) => {
+									const next = { ...profile(), signature };
+									setProfile(next);
+									profileStorage.setValue(next).catch(console.error);
+								}}
+							/>
+						</p>
 					</div>
 				</div>
 				<div class="search-box">

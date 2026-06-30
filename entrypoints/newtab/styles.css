@@ -155,15 +155,9 @@ body {
 	width: 100%;
 	align-items: center;
 	cursor: text;
-	border-radius: 6px;
-	transition: background-color 150ms;
 }
 
-.editable-text:hover {
-	background-color: #f3f4f6;
-}
-
-.editable-text input {
+.editable-text [contenteditable] {
 	background: transparent;
 	border: none;
 	outline: none;
@@ -174,6 +168,7 @@ body {
 	font: inherit;
 	line-height: inherit;
 	font-family: inherit;
+	white-space: nowrap;
 }
 
 /* Editable avatar */
