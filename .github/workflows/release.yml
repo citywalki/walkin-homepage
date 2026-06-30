@@ -68,8 +68,9 @@ jobs:
 
       - name: Create and push tag
         run: |
+          git tag -d ${{ steps.vars.outputs.tag }} 2>/dev/null || true
           git tag ${{ steps.vars.outputs.tag }}
-          git push origin ${{ steps.vars.outputs.tag }}
+          git push -f origin ${{ steps.vars.outputs.tag }}
 
   build-and-submit-firefox:
     name: Build and submit to Firefox Add-ons
