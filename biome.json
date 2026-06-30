@@ -7,13 +7,7 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": [
-			"**",
-			"!**/.output",
-			"!**/.wxt",
-			"!**/node_modules",
-			"!**/styled-system"
-		]
+		"includes": ["**", "!**/.output", "!**/.wxt", "!**/node_modules"]
 	},
 	"formatter": {
 		"enabled": true,

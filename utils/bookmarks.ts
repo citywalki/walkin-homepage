@@ -47,7 +47,7 @@ export function enrichBookmark(bookmark: BookmarkItem): BookmarkItem {
 }
 
 export function flattenBookmarksTree(
-	node: Browser.Bookmarks.BookmarkTreeNode,
+	node: Browser.bookmarks.BookmarkTreeNode,
 ): BookmarkItem[] {
 	const results: BookmarkItem[] = [];
 	if (node.url) {

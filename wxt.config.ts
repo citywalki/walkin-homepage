@@ -1,4 +1,3 @@
-import * as path from "node:path";
 import { defineConfig } from "wxt";
 
 // See https://wxt.dev/api/config.html
@@ -14,13 +13,5 @@ export default defineConfig({
 			},
 		}),
 	}),
-	vite: (_env) => {
-		return {
-			resolve: {
-				alias: {
-					"styled-system": path.resolve(__dirname, "styled-system"),
-				},
-			},
-		};
-	},
+
 });

@@ -5,7 +5,7 @@
 `walkin-homepage` 是一个浏览器扩展，用于替换浏览器的 **New Tab（新标签页）** 为自定义主页。当前核心页面仅实现了一个搜索落地页，后台脚本保留了书签监听的占位逻辑。
 
 - **技术栈**：WXT + SolidJS + TypeScript
-- **样式方案**：Panda CSS + Park UI preset
+- **样式方案**：UnoCSS（Tailwind 兼容语法）
 - **目标产物**：Chrome MV3 / Firefox MV2 扩展
 - **包管理器/运行时**：Bun
 
@@ -35,30 +35,27 @@
 
 ### UI 组件分层
 
-- `components/ui/<Component>.tsx`：业务层组件，处理 loading、disabled、可访问性等逻辑。
-- `components/ui/styled/<Component>.tsx`：样式原语，使用 `styled(ark.xxx, recipe)` 绑定 Panda recipe。
-- `components/ui/styled/utils/create-style-context.tsx`：为复杂组件提供 slot 样式共享的 Solid Context 工具。
+- `components/ui/<Component>.tsx`：业务层组件，处理 loading、disabled、可访问性等逻辑，直接使用 UnoCSS 原子类。
 
 ## Key Directories
 
 - `entrypoints/` — WXT 扩展入口（`background.ts`、`newtab/`）
-- `components/ui/` — 可复用 UI 组件（含 `styled/` 原语层）
-- `styled-system/` — **Panda CSS 自动生成**，包含 `css`、`recipes`、`jsx`、`tokens`、`patterns` 等，不要手写
-- `assets/` — 静态资源，如 `panda.css` CSS 层入口
+- `components/ui/` — 可复用 UI 组件
+- `assets/` — 静态资源
 - `public/` — 扩展图标等原样复制的公共资源
 - `.wxt/` — WXT 自动生成的类型声明与 `tsconfig.json`
 - `.output/` — 构建产物（按浏览器/版本分子目录）
 
 ## Development Commands
 
-全部命令默认使用 **Bun**：
+全部命令默认使用 **pnpm**：
 
 ```bash
-# 安装依赖并生成 Panda / WXT 环境
-bun install
+# 安装依赖并生成 WXT 环境
+pnpm install
 
 # 开发模式（默认 Chrome MV3）
-bun run dev
+pnpm run dev
 
 # 开发模式（Firefox MV2）
 bun run dev:firefox
@@ -119,7 +116,7 @@ bun run compile
 ### 路径别名
 
 - WXT 自动生成：`@/*`、`~/*`、`@@/*`、`~~/*` 指向项目根
-- Vite 额外配置：`styled-system` → `./styled-system`
+
 
 ### 状态管理
 
@@ -130,26 +127,23 @@ bun run compile
 
 | 文件 | 作用 |
 |------|------|
-| `wxt.config.ts` | WXT 主配置：Solid 模块、manifest 权限（`bookmarks`/`storage`/`webRequest`）、`styled-system` alias |
+| `wxt.config.ts` | WXT 主配置：Solid 模块、manifest 权限（`bookmarks`/`storage`/`webRequest`）、UnoCSS Vite 插件 |
 | `web-ext.config.ts` | web-ext 运行配置，当前 `disabled: true` |
-| `panda.config.ts` | Panda CSS 配置：扫描 `entrypoints/**`，使用 Park UI preset（neutral/sand/sm） |
-| `postcss.config.cjs` | 接入 `@pandacss/dev/postcss` |
-| `park-ui.json` | Park UI CLI 配置：`jsFramework: solid`，组件输出到 `./components/ui` |
+| `uno.config.ts` | UnoCSS 配置：使用 `preset-wind3`（Tailwind 兼容） |
 | `biome.json` | Biome formatter/linter/assist 配置 |
-| `tsconfig.json` | 继承 `.wxt/tsconfig.json`，覆盖 JSX 与 `styled-system` 路径 |
+| `tsconfig.json` | 继承 `.wxt/tsconfig.json`，覆盖 JSX 配置 |
 | `entrypoints/background.ts` | 后台脚本，含未完成的 `syncBookmarks` 与 `debugger` 语句 |
 | `entrypoints/newtab/App.tsx` | New Tab 主页面，搜索回车跳转 Bing |
-| `entrypoints/newtab/main.tsx` | 渲染入口，引入 `@/assets/panda.css` |
-| `assets/panda.css` | Panda CSS 层声明：`@layer reset, base, tokens, recipes, utilities;` |
+| `entrypoints/newtab/main.tsx` | 渲染入口，引入 `virtual:uno.css` |
 
 ## Runtime/Tooling Preferences
 
-- **包管理器/运行时**：Bun（`bun.lock`）
+- **包管理器/运行时**：pnpm
 - **构建工具**：WXT（基于 Vite）
   - 默认 Chrome MV3
   - Firefox 需加 `-b firefox`，生成 MV2
-- **CSS 引擎**：Panda CSS + PostCSS
-- **UI 基座**：Ark UI（headless）+ Park UI preset
+- **CSS 引擎**：UnoCSS
+- **UI 基座**：SolidJS 原生 JSX + UnoCSS 原子类
 - **代码质量**：Biome（无 ESLint/Prettier）
 - **类型检查**：TypeScript `tsc --noEmit`
 - **浏览器扩展权限**：`bookmarks`、`storage`、`webRequest`
@@ -163,12 +157,12 @@ bun run compile
 - **当前可用 QA 入口**：
   ```bash
   # 类型检查
-  bun run compile
+  pnpm run compile
 
   # Biome 检查
-  npx @biomejs/biome check .
+  pnpm dlx @biomejs/biome check .
 
   # Biome 格式化
-  npx @biomejs/biome format .
+  pnpm dlx @biomejs/biome format .
   ```
 - **注意**：核心路径（搜索跳转、书签同步）暂无自动化测试覆盖；`background.ts` 含占位实现与 `debugger` 语句。

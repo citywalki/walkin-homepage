@@ -1,16 +1,13 @@
 import { mergeProps, splitProps } from "solid-js";
-import { styled } from "styled-system/jsx";
-import {
-	Spinner as StyledSpinner,
-	type SpinnerProps as StyledSpinnerProps,
-} from "./styled/spinner";
 
-export interface SpinnerProps extends StyledSpinnerProps {
-	/**
-	 * For accessibility, it is important to add a fallback loading text.
-	 * This text will be visible to screen readers.
-	 * @default "Loading..."
-	 */
+export interface SpinnerProps {
+	width?: string;
+	height?: string;
+	borderWidth?: string;
+	borderTopColor?: string;
+	borderRightColor?: string;
+	borderBottomColor?: string;
+	borderLeftColor?: string;
 	label?: string;
 }
 
@@ -18,13 +15,24 @@ export const Spinner = (props: SpinnerProps) => {
 	const [_localProps, rootProps] = splitProps(props, ["label"]);
 	const localProps = mergeProps({ label: "Loading..." }, _localProps);
 
+	const style = () => ({
+		width: rootProps.width ?? "1em",
+		height: rootProps.height ?? "1em",
+		"border-width": rootProps.borderWidth ?? "2px",
+		"border-top-color": rootProps.borderTopColor ?? "currentColor",
+		"border-right-color": rootProps.borderRightColor ?? "currentColor",
+		"border-bottom-color": rootProps.borderBottomColor ?? "transparent",
+		"border-left-color": rootProps.borderLeftColor ?? "transparent",
+	});
+
 	return (
-		<StyledSpinner
-			borderBottomColor="transparent"
-			borderLeftColor="transparent"
-			{...rootProps}
+		<div
+			role="status"
+			aria-label={localProps.label}
+			class="spinner"
+			style={style()}
 		>
-			<styled.span srOnly>{localProps.label}</styled.span>
-		</StyledSpinner>
+			<span class="sr-only">{localProps.label}</span>
+		</div>
 	);
 };
