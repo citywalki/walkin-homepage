@@ -18,12 +18,12 @@ function App() {
 	let searchInput: HTMLInputElement;
 
 	const [search, setSearch] = createSignal("");
+	const [slashMode, setSlashMode] = createSignal(false);
 	const [selectedIndex, setSelectedIndex] = createSignal(0);
 	const [bookmarks, setBookmarks] = createSignal<BookmarkItem[]>([]);
 	const [loading, setLoading] = createSignal(true);
 
-	const query = () => search().slice(1).trim().toLowerCase();
-	const isSlashMode = () => search().startsWith("/");
+	const query = () => search().trim().toLowerCase();
 
 	const filteredBookmarks = () => {
 		const list = bookmarks() ?? [];
@@ -58,13 +58,28 @@ function App() {
 	};
 
 	const handleInput = (e: InputEvent) => {
-		setSearch((e.target as HTMLInputElement).value);
+		const target = e.target as HTMLInputElement;
+		const value = target.value;
+
+		if (!slashMode() && value.startsWith("/")) {
+			setSlashMode(true);
+			setSearch(value.slice(1));
+			return;
+		}
+
+		setSearch(value);
 	};
 
 	const searchKeydown = (e: KeyboardEvent) => {
 		const target = e.target as HTMLInputElement;
 
-		if (isSlashMode()) {
+		if (!slashMode() && e.key === "/") {
+			e.preventDefault();
+			setSlashMode(true);
+			return;
+		}
+
+		if (slashMode()) {
 			const items = filteredBookmarks();
 			switch (e.key) {
 				case "ArrowDown":
@@ -85,9 +100,17 @@ function App() {
 				}
 				case "Escape":
 					e.preventDefault();
+					setSlashMode(false);
 					setSearch("");
 					target.value = "";
 					setSelectedIndex(0);
+					return;
+				case "Backspace":
+					if (target.value === "") {
+						e.preventDefault();
+						setSlashMode(false);
+						setSelectedIndex(0);
+					}
 					return;
 			}
 		}
@@ -154,12 +177,12 @@ function App() {
 						}}
 						class="search-box__input"
 						type="text"
-						placeholder="使用Bing搜索"
+						placeholder={slashMode() ? "搜索书签…" : "使用Bing搜索"}
 						id="searchInput"
 						value={search()}
 					/>
-					<Show when={isSlashMode()}>
-						<div role="listbox" class="bookmark-list">
+					<Show when={slashMode()}>
+						<div role="listbox" class="bookmark-list" id="bookmarkList">
 							<Show
 								when={!loading()}
 								fallback={<div class="bookmark-list__empty">加载中…</div>}
