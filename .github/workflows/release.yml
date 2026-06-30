@@ -116,10 +116,11 @@ jobs:
         run: ls -la .output/
 
       - name: Upload extension ZIPs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: extension-zips-${{ github.run_id }}
-          path: .output/*.zip
+          path: .output/
+          if-no-files-found: error.output/*.zip
           if-no-files-found: error
 
   submit-firefox:
@@ -145,7 +146,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Download extension ZIPs
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: extension-zips-${{ github.run_id }}
           path: .output
@@ -174,7 +175,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download extension ZIPs
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: extension-zips-${{ github.run_id }}
           path: .output
