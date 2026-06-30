@@ -12,9 +12,11 @@ Configure these in the repository's **Settings → Secrets and variables → Act
 
 | Secret | Description |
 | --- | --- |
-| `FIREFOX_EXTENSION_ID` | Extension ID from [AMO](https://addons.mozilla.org/developers/) |
+| `FIREFOX_EXTENSION_ID` | UUID from AMO "Technical Information" — used in `manifest.json` |
 | `FIREFOX_JWT_ISSUER` | AMO API JWT issuer (API key) |
 | `FIREFOX_JWT_SECRET` | AMO API JWT secret (API secret) |
+
+> Note: The AMO URL slug (`walkin-homepage`) is public and hardcoded in the workflow for `wxt submit`.
 
 
 ### Publishing
