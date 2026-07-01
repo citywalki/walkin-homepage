@@ -9,6 +9,7 @@ interface EditableTextProps {
 export function EditableText(props: EditableTextProps) {
 	const [isEditing, setIsEditing] = createSignal(false);
 	const [draft, setDraft] = createSignal(props.value);
+	const [isComposing, setIsComposing] = createSignal(false);
 
 	createEffect(() => {
 		if (!isEditing()) {
@@ -16,14 +17,26 @@ export function EditableText(props: EditableTextProps) {
 		}
 	});
 
+	let editableRef: HTMLSpanElement | undefined;
+	let pendingSave = false;
+	let pendingCancel = false;
+
+	const syncDraftFromDom = () => {
+		setDraft(editableRef?.textContent ?? "");
+	};
+
 	const save = () => {
-		props.onChange(draft().trim());
+		props.onChange((editableRef?.textContent ?? draft()).trim());
 		setIsEditing(false);
+		pendingSave = false;
+		pendingCancel = false;
 	};
 
 	const cancel = () => {
 		setDraft(props.value);
 		setIsEditing(false);
+		pendingSave = false;
+		pendingCancel = false;
 	};
 
 	const insertPlainText = (text: string) => {
@@ -76,6 +89,7 @@ export function EditableText(props: EditableTextProps) {
 	};
 
 	const handleEditableRef = (el: HTMLSpanElement) => {
+		editableRef = el;
 		el.textContent = draft();
 		el.focus();
 
@@ -124,9 +138,25 @@ export function EditableText(props: EditableTextProps) {
 				<span
 					contentEditable
 					ref={handleEditableRef}
-					on:input={(e) => setDraft(e.currentTarget.textContent ?? "")}
-					on:blur={save}
+					on:input={syncDraftFromDom}
+					on:compositionstart={() => setIsComposing(true)}
+					on:compositionend={() => {
+						setIsComposing(false);
+						requestAnimationFrame(() => {
+							syncDraftFromDom();
+							if (pendingSave) save();
+							if (pendingCancel) cancel();
+						});
+					}}
+					on:blur={() => {
+						if (isComposing()) {
+							pendingSave = true;
+							return;
+						}
+						save();
+					}}
 					on:keydown={(e) => {
+						if (e.isComposing) return;
 						if (e.key === "Enter") {
 							e.preventDefault();
 							save();
