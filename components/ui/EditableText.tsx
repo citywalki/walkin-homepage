@@ -110,7 +110,17 @@ export function EditableText(props: EditableTextProps) {
 				}
 			}}
 		>
-			<Show when={isEditing()} fallback={props.value}>
+			<Show
+				when={isEditing()}
+				fallback={
+					<span
+						class="editable-text__display"
+						classList={{ "is-empty": !props.value }}
+					>
+						{props.value || props.placeholder || "\u00A0"}
+					</span>
+				}
+			>
 				<span
 					contentEditable
 					ref={handleEditableRef}

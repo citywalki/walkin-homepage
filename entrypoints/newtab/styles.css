@@ -230,8 +230,13 @@ body {
 .editable-text {
 	display: inline-flex;
 	width: 100%;
+	min-width: 3em;
 	align-items: center;
 	cursor: text;
+}
+
+.editable-text__display.is-empty {
+	color: var(--text-placeholder);
 }
 
 .editable-text [contenteditable] {
@@ -241,6 +246,7 @@ body {
 	padding: 0;
 	margin: 0;
 	width: 100%;
+	min-width: 3em;
 	color: inherit;
 	font: inherit;
 	line-height: inherit;
