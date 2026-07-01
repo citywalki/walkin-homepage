@@ -77,8 +77,8 @@ jobs:
           git tag ${{ steps.vars.outputs.tag }}
           git push -f origin ${{ steps.vars.outputs.tag }}
 
-  build-and-submit-firefox:
-    name: Build and submit to Firefox Add-ons
+  build:
+    name: Build extensions
     needs: bump-and-tag
     runs-on: ubuntu-latest
     steps:
@@ -116,59 +116,74 @@ jobs:
         env:
           FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
 
-      - name: Submit to Firefox Add-ons
-        if: inputs.dry-run != true
-        run: |
-          pnpm dlx web-ext@8 sign \
-            --source-dir .output/firefox-mv2 \
-            --api-key ${{ secrets.FIREFOX_JWT_ISSUER }} \
-            --api-secret ${{ secrets.FIREFOX_JWT_SECRET }} \
-            --channel ${{ inputs.firefox-channel }} \
-            --timeout 300000
+      - name: Create source code archive
+        run: git archive --format=zip -o .output/source.zip HEAD
 
-      - name: Upload extension ZIPs for release
-        if: inputs.dry-run != true
-        continue-on-error: true
+      - name: Upload build output
         uses: actions/upload-artifact@v4
         with:
-          name: extension-zips-${{ github.run_id }}
-          path: .output/
+          name: extension-outputs-${{ github.run_id }}
+          path:
+            - .output/*.zip
+            - .output/firefox-mv2/
+          if-no-files-found: error
           overwrite: true
           compression-level: 0
-          if-no-files-found: error
 
-  github-release:
-    name: Create GitHub Release
-    needs: [bump-and-tag, build-and-submit-firefox]
+  submit-firefox:
+    name: Submit to Firefox Add-ons
+    needs: build
     if: inputs.dry-run != true
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.bump-and-tag.outputs.tag }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 11
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Download build output
+        uses: actions/download-artifact@v4
         with:
-          node-version: 22
-          cache: pnpm
+          name: extension-outputs-${{ github.run_id }}
+          path: .output/
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build and zip extensions
+      - name: Submit to Firefox Add-ons
+        id: submit-amo
+        continue-on-error: true
         run: |
-          pnpm zip
-          pnpm zip:firefox
-        env:
-          FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
+          pnpm dlx web-ext@8 sign \
+            --source-dir .output/firefox-mv2 \
+            --artifacts-dir .output \
+            --upload-source-code .output/source.zip \
+            --api-key ${{ secrets.FIREFOX_JWT_ISSUER }} \
+            --api-secret ${{ secrets.FIREFOX_JWT_SECRET }} \
+            --channel ${{ inputs.firefox-channel }} \
+            --timeout 300000
+
+      - name: Upload Firefox submission artifacts
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: firefox-amo-${{ github.run_id }}
+          path:
+            - .output/*.xpi
+            - .output/*.zip
+          if-no-files-found: ignore
+          overwrite: true
+          compression-level: 0
+
+  github-release:
+    name: Create GitHub Release
+    needs: [bump-and-tag, build]
+    if: inputs.dry-run != true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: extension-outputs-${{ github.run_id }}
+          path: .output/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
