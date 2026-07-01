@@ -130,7 +130,6 @@ jobs:
           overwrite: true
           compression-level: 0
           include-hidden-files: true
-          include-hidden-files: true
 
   submit-firefox:
     name: Submit to Firefox Add-ons
@@ -174,7 +173,6 @@ jobs:
           if-no-files-found: ignore
           overwrite: true
           compression-level: 0
-          include-hidden-files: true
           include-hidden-files: true
 
   github-release:
