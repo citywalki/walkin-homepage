@@ -26,7 +26,7 @@ function App() {
 	const [selectedIndex, setSelectedIndex] = createSignal(0);
 	const [bookmarks, setBookmarks] = createSignal<BookmarkItem[]>([]);
 	const [loading, setLoading] = createSignal(true);
-	const [profile, setProfile] = createSignal<Profile>(DEFAULT_PROFILE);
+	const [profile, setProfile] = createSignal<Profile | null>(null);
 
 	const query = () => search().trim().toLowerCase();
 
@@ -165,10 +165,11 @@ function App() {
 		profileStorage
 			.getValue()
 			.then((value) => {
-				if (value) setProfile(value);
+				setProfile(value);
 			})
 			.catch((error) => {
 				console.error("[walkin] Failed to load profile:", error);
+				setProfile(DEFAULT_PROFILE);
 			});
 	});
 
@@ -178,39 +179,43 @@ function App() {
 				<ThemeToggle />
 			</header>
 			<main>
-				<div class="profile">
-					<EditableAvatar
-						src={profile().avatarUrl}
-						alt={profile().title}
-						onChange={(avatarUrl) => {
-							const next = { ...profile(), avatarUrl };
-							setProfile(next);
-							profileStorage.setValue(next).catch(console.error);
-						}}
-					/>
-					<div class="profile__info">
-						<p class="profile__title">
-							<EditableText
-								value={profile().title}
-								onChange={(title) => {
-									const next = { ...profile(), title };
+				<Show when={profile()} fallback={<div class="profile"></div>}>
+					{(p) => (
+						<div class="profile">
+							<EditableAvatar
+								src={p().avatarUrl}
+								alt={p().title}
+								onChange={(avatarUrl) => {
+									const next = { ...p(), avatarUrl };
 									setProfile(next);
 									profileStorage.setValue(next).catch(console.error);
 								}}
 							/>
-						</p>
-						<p class="profile__signature">
-							<EditableText
-								value={profile().signature}
-								onChange={(signature) => {
-									const next = { ...profile(), signature };
-									setProfile(next);
-									profileStorage.setValue(next).catch(console.error);
-								}}
-							/>
-						</p>
-					</div>
-				</div>
+							<div class="profile__info">
+								<p class="profile__title">
+									<EditableText
+										value={p().title}
+										onChange={(title) => {
+											const next = { ...p(), title };
+											setProfile(next);
+											profileStorage.setValue(next).catch(console.error);
+										}}
+									/>
+								</p>
+								<p class="profile__signature">
+									<EditableText
+										value={p().signature}
+										onChange={(signature) => {
+											const next = { ...p(), signature };
+											setProfile(next);
+											profileStorage.setValue(next).catch(console.error);
+										}}
+									/>
+								</p>
+							</div>
+						</div>
+					)}
+				</Show>
 				<div class="search-box">
 					<input
 						on:input={handleInput}
