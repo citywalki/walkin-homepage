@@ -123,9 +123,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: extension-outputs-${{ github.run_id }}
-          path:
-            - .output/*.zip
-            - .output/firefox-mv2/
+          path: |
+            .output/*.zip
+            .output/firefox-mv2/
           if-no-files-found: error
           overwrite: true
           compression-level: 0
@@ -166,9 +166,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: firefox-amo-${{ github.run_id }}
-          path:
-            - .output/*.xpi
-            - .output/*.zip
+          path: |
+            .output/*.xpi
+            .output/*.zip
           if-no-files-found: ignore
           overwrite: true
           compression-level: 0
