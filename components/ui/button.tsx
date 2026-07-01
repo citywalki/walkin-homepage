@@ -23,11 +23,7 @@ export const Button = (props: ButtonProps) => {
 	const trulyDisabled = () => localProps.loading || localProps.disabled;
 
 	return (
-		<button
-			disabled={trulyDisabled()}
-			class="btn"
-			{...rest}
-		>
+		<button disabled={trulyDisabled()} class="btn" {...rest}>
 			<Show
 				when={localProps.loading && !localProps.loadingText}
 				fallback={localProps.loadingText || localProps.children}

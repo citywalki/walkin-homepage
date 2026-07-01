@@ -221,7 +221,7 @@ function App() {
 						class="search-box__input"
 						type="text"
 						autofocus
-						placeholder={slashMode() ? "搜索书签…" : "使用Bing搜索"}
+						placeholder={slashMode() ? "搜索书签…" : "搜索或输入 / 查找书签"}
 						id="searchInput"
 						value={search()}
 					/>
